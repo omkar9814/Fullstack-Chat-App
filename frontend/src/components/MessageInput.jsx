@@ -106,4 +106,5 @@ const MessageInput = () => {
     </div>
   );
 };
+
 export default MessageInput;
