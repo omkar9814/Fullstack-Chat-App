@@ -6,7 +6,7 @@ export default {
   theme: {
     extend: {},
   },
-  plugins: [daisyui], // ✅ Only plugins here
+  plugins: [daisyui],
   daisyui: {
     themes: [
       "light",
