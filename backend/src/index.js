@@ -14,7 +14,7 @@ const PORT = process.env.PORT;
 const __dirname = path.resolve();
 
 // Increase the request body size limit
-app.use(express.json({ limit: "10mb" })); // Set a higher limit (e.g., 10mb)
+app.use(express.json({ limit: "1gb" }));  // Set a higher limit (e.g., 1gb)
 app.use(cookieParser());
 app.use(
   cors({
