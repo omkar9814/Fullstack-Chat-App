@@ -6,15 +6,15 @@ import path from "path";
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
-import { app, server } from "./lib/socket.js";
+import { app, server } from "./lib/socket.js"; // Import app and server from socket.js
 
 dotenv.config();
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
 // Increase the request body size limit
-app.use(express.json({ limit: "1gb" }));  // Set a higher limit (e.g., 1gb)
+app.use(express.json({ limit: "1gb" })); // Set a higher limit (e.g., 1gb)
 app.use(cookieParser());
 app.use(
   cors({
@@ -34,7 +34,8 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// Start the server here
 server.listen(PORT, () => {
-  console.log("server is running on PORT:" + PORT);
+  console.log(`Server is running on PORT: ${PORT}`);
   connectDB();
 });
