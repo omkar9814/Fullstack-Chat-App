@@ -18,6 +18,28 @@ const messageSchema = new mongoose.Schema(
         image: {
             type: String,
         },
+        video: {
+            type: String,
+        },
+        readBy: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
+        reactions: {
+            type: Map,
+            of: String, // userId -> emoji
+            default: {},
+        },
+        edited: {
+            type: Boolean,
+            default: false,
+        },
+        deleted: {
+            type: Boolean,
+            default: false,
+        },
 
     },
     { timestamps: true}

@@ -5,11 +5,15 @@ import express from "express";
 const app = express();
 const server = http.createServer(app);
 
+// Shared CORS options for Express and Socket.IO
+const corsOptions = {
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  methods: ["GET", "POST"],
+  credentials: true,
+};
+
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Your frontend URL
-    methods: ["GET", "POST"],
-  },
+  cors: corsOptions,
 });
 
 const userSocketMap = {}; // This will store user socket ids
@@ -33,6 +37,26 @@ io.on("connection", (socket) => {
     const receiverSocketId = getReceiverSocketId(messageData.receiverId);
     if (receiverSocketId) {
       io.to(receiverSocketId).emit("newMessage", messageData);
+    }
+  });
+
+  // New typing event listener
+  socket.on("typing", ({ receiverId, senderId }) => {
+    console.log(`Backend received typing event from senderId: ${senderId} to receiverId: ${receiverId}`);
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      console.log(`Backend emitting typing event to socketId: ${receiverSocketId}`);
+      io.to(receiverSocketId).emit("typing", { senderId });
+    }
+  });
+
+  // New stopTyping event listener
+  socket.on("stopTyping", ({ receiverId, senderId }) => {
+    console.log(`Backend received stopTyping event from senderId: ${senderId} to receiverId: ${receiverId}`);
+    const receiverSocketId = getReceiverSocketId(receiverId);
+    if (receiverSocketId) {
+      console.log(`Backend emitting stopTyping event to socketId: ${receiverSocketId}`);
+      io.to(receiverSocketId).emit("stopTyping", { senderId });
     }
   });
 

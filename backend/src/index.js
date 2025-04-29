@@ -13,15 +13,22 @@ dotenv.config();
 const PORT = process.env.PORT || 5000;
 const __dirname = path.resolve();
 
+// Shared CORS options for Express and Socket.IO
+const corsOptions = {
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  credentials: true,
+  optionsSuccessStatus: 200, // Some legacy browsers choke on 204
+};
+
 // Increase the request body size limit
 app.use(express.json({ limit: "1gb" })); // Set a higher limit (e.g., 1gb)
 app.use(cookieParser());
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+
+// Use CORS middleware with shared options
+app.use(cors(corsOptions));
+
+// Explicitly handle OPTIONS preflight requests with shared options
+app.options("*", cors(corsOptions));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
