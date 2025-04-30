@@ -32,7 +32,7 @@ app.use(cors(corsOptions));
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self' http://localhost:5173 http://localhost:5001 data: blob:; script-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001; style-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001; img-src 'self' data: http://localhost:5173 http://localhost:5001; connect-src 'self' ws://localhost:5001 http://localhost:5173 http://localhost:5001; font-src 'self' http://localhost:5173 http://localhost:5001; frame-src 'self' http://localhost:5173 http://localhost:5001;"
+    "default-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com data: blob:; script-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; style-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; img-src 'self' data: http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; connect-src 'self' ws://localhost:5001 http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; font-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; frame-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com;"
   );
   next();
 });
