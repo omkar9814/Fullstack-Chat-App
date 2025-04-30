@@ -16,7 +16,11 @@ const __dirname = path.resolve();
 
 // Shared CORS options for Express and Socket.IO
 const corsOptions = {
-  origin: ["http://localhost:5173", "http://localhost:3000"],
+  origin: [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://fullstack-chat-app-10-3dfg.onrender.com/", // Add your deployed frontend domain here
+  ],
   credentials: true,
   optionsSuccessStatus: 200, // Some legacy browsers choke on 204
 };
