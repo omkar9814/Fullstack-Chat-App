@@ -179,6 +179,7 @@ const getUsersForSidebar = async (req, res) => {
         $project: {
           email: 1,
           username: 1,
+          fullName: 1,
           profilePic: 1,
           lastMessage: 1,
         },

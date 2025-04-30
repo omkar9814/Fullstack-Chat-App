@@ -6,6 +6,7 @@ import path from "path";
 import { connectDB } from "./lib/db.js";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
+import movieRoutes from "./routes/movie.route.js";
 import { app, server } from "./lib/socket.js"; // Import app and server from socket.js
 
 dotenv.config();
@@ -27,11 +28,21 @@ app.use(cookieParser());
 // Use CORS middleware with shared options
 app.use(cors(corsOptions));
 
+// Add Content-Security-Policy header middleware
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "default-src 'self' http://localhost:5173 http://localhost:5001 data: blob:; script-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001; style-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001; img-src 'self' data: http://localhost:5173 http://localhost:5001; connect-src 'self' ws://localhost:5001 http://localhost:5173 http://localhost:5001; font-src 'self' http://localhost:5173 http://localhost:5001; frame-src 'self' http://localhost:5173 http://localhost:5001;"
+  );
+  next();
+});
+
 // Explicitly handle OPTIONS preflight requests with shared options
 app.options("*", cors(corsOptions));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
+app.use("/api/movies", movieRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/dist")));
