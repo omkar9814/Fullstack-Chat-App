@@ -11,6 +11,7 @@ const MoviePage = () => {
   const [timeRemaining, setTimeRemaining] = useState(null);
   const uploadStartTime = useRef(null);
   const currentlyPlayingVideo = useRef(null);
+  const currentlyPlayingIndex = useRef(null);
 
   const fetchMovies = async () => {
     try {
@@ -78,11 +79,38 @@ const MoviePage = () => {
     return `${mins}m ${secs}s`;
   };
 
-  const handlePlay = (event) => {
+  const handlePlay = (event, index) => {
     if (currentlyPlayingVideo.current && currentlyPlayingVideo.current !== event.target) {
-      currentlyPlayingVideo.current.pause();
+      const pausePromise = currentlyPlayingVideo.current.pause();
+      if (pausePromise !== undefined) {
+        pausePromise.catch(() => {
+          // Ignore pause promise rejection
+        });
+      }
     }
     currentlyPlayingVideo.current = event.target;
+    currentlyPlayingIndex.current = index;
+  };
+
+  const handleEnded = () => {
+    if (currentlyPlayingIndex.current === null) return;
+    const nextIndex = currentlyPlayingIndex.current + 1;
+    if (nextIndex < movies.length) {
+      const nextVideoElement = document.querySelectorAll("video")[nextIndex];
+      if (nextVideoElement) {
+        nextVideoElement.muted = true;
+        const playPromise = nextVideoElement.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            nextVideoElement.muted = false;
+          }).catch(error => {
+            console.error("Error playing next video:", error);
+          });
+        }
+        currentlyPlayingVideo.current = nextVideoElement;
+        currentlyPlayingIndex.current = nextIndex;
+      }
+    }
   };
 
   return (
@@ -142,7 +170,7 @@ const MoviePage = () => {
         {movies.length === 0 ? (
           <p className="text-center text-gray-500 col-span-full">No movies available</p>
         ) : (
-          movies.map((movie) => (
+          movies.map((movie, index) => (
             <div key={movie._id} className="bg-white rounded-lg shadow-lg p-4 flex flex-col">
               <h2 className="text-2xl font-semibold mb-4 text-indigo-800 truncate">{movie.title}</h2>
               <video
@@ -153,8 +181,9 @@ const MoviePage = () => {
                   console.error("Video playback error for movie:", movie.title);
                   e.target.poster = "/fallback-poster.png"; // optional fallback poster image
                 }}
-                onPlay={handlePlay}
+                onPlay={(e) => handlePlay(e, index)}
                 src={movie.videoUrl.startsWith("http") ? movie.videoUrl : `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5001"}${movie.videoUrl}`}
+                onEnded={handleEnded}
               >
                 <source src={movie.videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
