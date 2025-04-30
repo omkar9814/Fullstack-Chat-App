@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { axiosInstance } from "../lib/axios";
+import AdSenseAd from "../components/AdSenseAd";
 
 const MoviePage = () => {
   const [title, setTitle] = useState("");
@@ -147,7 +148,7 @@ const MoviePage = () => {
               <video
                 key={movie._id}
                 controls
-                className="w-full rounded-md shadow-md mb-4 border border-indigo-300"
+                className="w-full rounded-md shadow-md mb-4 border border-indigo-300 max-h-[60vh] sm:max-h-96"
                 onError={(e) => {
                   console.error("Video playback error for movie:", movie.title);
                   e.target.poster = "/fallback-poster.png"; // optional fallback poster image
@@ -168,6 +169,16 @@ const MoviePage = () => {
             </div>
           ))
         )}
+      </div>
+
+      {/* Google AdSense Ad */}
+      <div className="max-w-6xl mx-auto p-4 mt-8">
+        <AdSenseAd
+          client="ca-pub-XXXXXXXXXXXXXXXX"  // Replace with your AdSense client ID
+          slot="1234567890"                // Replace with your AdSense ad slot ID
+          style={{ display: "block", textAlign: "center" }}
+          className="my-4"
+        />
       </div>
     </div>
   );
