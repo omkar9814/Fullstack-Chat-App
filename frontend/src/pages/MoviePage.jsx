@@ -154,13 +154,13 @@ const MoviePage = () => {
                   e.target.poster = "/fallback-poster.png"; // optional fallback poster image
                 }}
                 onPlay={handlePlay}
-                src={movie.videoUrl.startsWith("http") ? movie.videoUrl : `http://localhost:5001${movie.videoUrl}`}
+                src={movie.videoUrl.startsWith("http") ? movie.videoUrl : `${import.meta.env.VITE_BACKEND_URL || "http://localhost:5001"}${movie.videoUrl}`}
               >
                 <source src={movie.videoUrl} type="video/mp4" />
                 Your browser does not support the video tag.
               </video>
               <a
-                href={movie.videoUrl.replace("/stream/", "/download/").startsWith("http") ? movie.videoUrl.replace("/stream/", "/download/") : `http://localhost:5001${movie.videoUrl.replace("/stream/", "/download/")}`}
+                href={movie.videoUrl.replace("/stream/", "/download/").startsWith("http") ? movie.videoUrl.replace("/stream/", "/download/") : `${import.meta.env.VITE_BACKEND_URL}${movie.videoUrl.replace("/stream/", "/download/")}`}
                 className="btn btn-indigo mt-auto text-white font-semibold hover:bg-indigo-700 transition-colors"
                 download={`${movie.title || "video"}.mp4`}
               >

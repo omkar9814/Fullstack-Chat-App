@@ -77,7 +77,13 @@ const Sidebar = () => {
           >
             <div className="relative mx-auto lg:mx-0">
               <img
-                src={user.profilePic || "/avatar.png"}
+                src={
+                  user.profilePic
+                    ? user.profilePic.startsWith("http")
+                      ? user.profilePic
+                      : `${import.meta.env.VITE_BACKEND_URL}${user.profilePic}`
+                    : "/avatar.png"
+                }
                 alt={user.name}
                 className="w-10 h-10 sm:w-12 sm:h-12 object-cover rounded-full"
               />
