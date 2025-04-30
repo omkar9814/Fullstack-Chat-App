@@ -36,7 +36,7 @@ app.use(cors(corsOptions));
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "default-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com data: blob:; script-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; style-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; img-src 'self' data: http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; connect-src 'self' ws://localhost:5001 http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; font-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com; frame-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com;"
+    "default-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me data: blob:; script-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me; style-src 'self' 'unsafe-inline' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me; img-src 'self' data: http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me; connect-src 'self' ws://localhost:5001 http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me; font-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me; frame-src 'self' http://localhost:5173 http://localhost:5001 https://res.cloudinary.com https://randomuser.me;"
   );
   next();
 });
