@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import http from "http";
 import express from "express";
+import User from "../models/user.model.js"; // Import User model
 
 const app = express();
 const server = http.createServer(app);
@@ -40,35 +41,82 @@ io.on("connection", (socket) => {
     }
   });
 
-  // New typing event listener
   socket.on("typing", ({ receiverId, senderId }) => {
-    console.log(`Backend received typing event from senderId: ${senderId} to receiverId: ${receiverId}`);
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      console.log(`Backend emitting typing event to socketId: ${receiverSocketId}`);
       io.to(receiverSocketId).emit("typing", { senderId });
     }
   });
 
-  // New stopTyping event listener
-  socket.on("stopTyping", ({ receiverId, senderId }) => {
-    console.log(`Backend received stopTyping event from senderId: ${senderId} to receiverId: ${receiverId}`);
+  socket.on("stopTyping", (data) => {
+    if (!data) {
+      console.warn("stopTyping event received with undefined data");
+      return;
+    }
+    const { receiverId, senderId } = data;
     const receiverSocketId = getReceiverSocketId(receiverId);
     if (receiverSocketId) {
-      console.log(`Backend emitting stopTyping event to socketId: ${receiverSocketId}`);
       io.to(receiverSocketId).emit("stopTyping", { senderId });
     }
   });
 
-  socket.on("disconnect", () => {
-    console.log("A user disconnected", socket.id);
+  // WebRTC signaling handlers for audio/video calls
+  socket.on("callUser", async ({ to, from, offer, callType }) => {
+    const receiverSocketId = getReceiverSocketId(to);
+    console.log("callUser event received with from:", from, "to:", to);
+    if (receiverSocketId) {
+      try {
+        // Fetch caller user details
+        const callerUser = await User.findById(from).select("_id fullName profilePic").lean();
+        console.log("Fetched callerUser:", callerUser);
+        const caller = callerUser ? {
+          _id: callerUser._id.toString(),
+          fullName: callerUser.fullName,
+          profilePic: callerUser.profilePic,
+        } : { _id: from };
 
+        io.to(receiverSocketId).emit("callUser", { from, offer, callType, caller });
+      } catch (error) {
+        console.error("Error fetching caller user details for callUser event", error);
+        io.to(receiverSocketId).emit("callUser", { from, offer, callType, caller: { _id: from } });
+      }
+    }
+  });
+
+  socket.on("answerCall", ({ to, answer }) => {
+    const receiverSocketId = getReceiverSocketId(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("answerCall", { answer });
+    }
+  });
+
+  socket.on("iceCandidate", ({ to, candidate }) => {
+    const receiverSocketId = getReceiverSocketId(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("iceCandidate", { candidate });
+    }
+  });
+
+  socket.on("endCall", ({ to }) => {
+    const receiverSocketId = getReceiverSocketId(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("endCall");
+    }
+  });
+
+  socket.on("missedCall", ({ to }) => {
+    const receiverSocketId = getReceiverSocketId(to);
+    if (receiverSocketId) {
+      io.to(receiverSocketId).emit("missedCall", { from: socket.handshake.query.userId });
+    }
+  });
+
+  socket.on("disconnect", () => {
     if (userId) {
-      delete userSocketMap[userId]; // Remove user from the map
-      io.emit("getOnlineUsers", Object.keys(userSocketMap)); // Update online users list
+      delete userSocketMap[userId];
+      io.emit("getOnlineUsers", Object.keys(userSocketMap));
     }
   });
 });
 
-// Export app, server, and io
 export { app, server, io };

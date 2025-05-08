@@ -100,6 +100,10 @@ export const useAuthStore = create((set, get) => ({
       query: {
         userId: authUser._id,
       },
+      transports: ["websocket", "polling"],
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
     });
 
     socket.on("connect", () => {

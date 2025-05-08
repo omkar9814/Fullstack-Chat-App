@@ -1,4 +1,4 @@
-import { useChatStore } from "../store/useChatStore";
+import { useChatStore } from "../store/useChatStore.jsx";
 import { useEffect, useRef } from "react";
 import ChatHeader from "./ChatHeader";
 import MessageInput from "./MessageInput";
@@ -16,9 +16,20 @@ const ChatContainer = () => {
     unsubscribeFromMessages,
     sendMessage,
     typingStatus,
+    callActive,
+    callOutgoing,
+    callType,
+    localStream,
+    remoteStream,
+    callIncoming,
+    caller,
+    answerCall,
+    endCall,
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = useRef(null);
+  const localVideoRef = useRef(null);
+  const remoteVideoRef = useRef(null);
 
   useEffect(() => {
     if (selectedUser?._id) {
@@ -36,6 +47,18 @@ const ChatContainer = () => {
   useEffect(() => {
     messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+    }
+  }, [localStream]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+    }
+  }, [remoteStream]);
 
   // Pass this handler into MessageInput
   const handleSendMessage = (messageData) => {
@@ -59,15 +82,32 @@ const ChatContainer = () => {
     (userId) => typingStatus[userId]
   );
 
+  // Determine if current user is caller or callee
+  const isCaller = callOutgoing;
+
+  // Video sizes based on caller or callee role
+  const localVideoSize = isCaller ? "w-40 h-40" : "w-80 h-80";
+  const remoteVideoSize = isCaller ? "w-80 h-80" : "w-40 h-40";
+
+  // Filter messages to remove duplicates by _id
+  const uniqueMessages = [];
+  const messageIds = new Set();
+  for (const message of messages) {
+    if (!messageIds.has(message._id)) {
+      uniqueMessages.push(message);
+      messageIds.add(message._id);
+    }
+  }
+
   return (
     <div className="flex-1 flex flex-col overflow-auto">
       <ChatHeader />
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        {messages.length === 0 ? (
+        {uniqueMessages.length === 0 ? (
           <div className="text-center text-gray-500">No messages yet</div>
         ) : (
-          messages.map((message) => (
+          uniqueMessages.map((message) => (
             <div
               key={message._id}
               className={`chat ${
@@ -121,6 +161,9 @@ const ChatContainer = () => {
                           src={message.video}
                           controls
                           className="sm:max-w-[200px] rounded-md mb-2"
+                          onError={(e) => {
+                            console.error("Video failed to load:", e);
+                          }}
                         />
                         <a
                           href={message.video}
@@ -185,7 +228,109 @@ const ChatContainer = () => {
         <div ref={messageEndRef} />
       </div>
 
-      {/* Pass the prop down */}
+      {/* Video call UI */}
+      {callActive && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
+          <div className="flex space-x-4 mb-4">
+            <div className="relative">
+              <video
+                ref={localVideoRef}
+                autoPlay
+                muted
+                playsInline
+                className={`${localVideoSize} rounded-lg bg-black border-4 border-blue-500`}
+                onLoadedMetadata={() => {
+                  if(localVideoRef.current) {
+                    localVideoRef.current.play().catch(e => console.error("Error playing local video:", e));
+                  }
+                }}
+              />
+              <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                You
+              </div>
+            </div>
+            <div className="relative">
+              <video
+                ref={remoteVideoRef}
+                autoPlay
+                playsInline
+                className={`${remoteVideoSize} rounded-lg bg-black border-4 border-gray-700`}
+                onLoadedMetadata={() => {
+                  if(remoteVideoRef.current) {
+                    remoteVideoRef.current.play().catch(e => console.error("Error playing remote video:", e));
+                  }
+                }}
+              />
+              <div className="absolute bottom-1 left-1 bg-black bg-opacity-50 text-white text-xs px-1 rounded">
+                {isCaller ? "Callee" : "Caller"}
+              </div>
+            </div>
+          </div>
+          <div className="flex space-x-4">
+            <button
+              onClick={endCall}
+              className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              End Call
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Incoming call UI */}
+      {callIncoming && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 text-center max-w-sm w-full">
+            <img
+              src={caller?.profilePic || "/avatar.png"}
+              alt="Caller Avatar"
+              className="mx-auto rounded-full w-24 h-24 mb-4 object-cover"
+            />
+            <p className="mb-4 text-xl font-semibold">
+              Incoming {callType} call from {caller?.fullName || "Unknown"}
+            </p>
+            <div className="flex justify-center space-x-6">
+              <button
+                onClick={answerCall}
+                className="bg-green-600 text-white px-6 py-3 rounded-full hover:bg-green-700 shadow-lg transition"
+              >
+                Answer
+              </button>
+              <button
+                onClick={endCall}
+                className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 shadow-lg transition"
+              >
+                Decline
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Outgoing call UI */}
+      {callOutgoing && (
+        <div className="fixed inset-0 bg-black bg-opacity-75 flex flex-col items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg p-6 text-center max-w-sm w-full">
+            <img
+              src={selectedUser?.profilePic || "/avatar.png"}
+              alt="Callee Avatar"
+              className="mx-auto rounded-full w-24 h-24 mb-4 object-cover"
+            />
+            <p className="mb-4 text-xl font-semibold">
+              Calling {selectedUser?.fullName || "Unknown"}...
+            </p>
+            <div className="flex justify-center">
+              <button
+                onClick={endCall}
+                className="bg-red-600 text-white px-6 py-3 rounded-full hover:bg-red-700 shadow-lg transition"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <MessageInput onSendMessage={handleSendMessage} />
     </div>
   );

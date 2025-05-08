@@ -1,6 +1,6 @@
 import express from "express";
 import { protectRoute } from "../middleware/auth.middleware.js";
-import { addMovie, getMovies, streamMovieVideo, listMovieFiles, downloadMovieVideo } from "../controllers/movie.controller.js";
+import { addMovie, getMovies, streamMovieVideo, listMovieFiles, downloadMovieVideo, deleteMovie } from "../controllers/movie.controller.js";
 import path from "path";
 import multer from "multer";
 
@@ -46,5 +46,7 @@ router.get("/stream/:id", streamMovieVideo);
 router.get("/files", listMovieFiles);
 
 router.get("/download/:id", downloadMovieVideo);
+
+router.delete("/:id", protectRoute, deleteMovie);
 
 export default router;

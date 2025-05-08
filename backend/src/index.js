@@ -11,7 +11,7 @@ import { app, server } from "./lib/socket.js"; // Import app and server from soc
 
 dotenv.config();
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 const __dirname = path.resolve();
 
 // Shared CORS options for Express and Socket.IO

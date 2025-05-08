@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { useChatStore } from "../store/useChatStore";
+import { useChatStore } from "../store/useChatStore.jsx";
 import { Image, Video as VideoIcon, Send, X } from "lucide-react";
 import toast from "react-hot-toast";
 

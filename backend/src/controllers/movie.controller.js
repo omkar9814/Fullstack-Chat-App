@@ -208,4 +208,36 @@ const downloadMovieVideo = async (req, res) => {
   }
 };
 
-export { addMovie, getMovies, streamMovieVideo, listMovieFiles, downloadMovieVideo };
+const deleteMovie = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Find the movie document by ID
+    const movie = await Movie.findById(id);
+    if (!movie) {
+      return res.status(404).json({ error: "Movie not found" });
+    }
+
+    // Extract GridFS file ID from videoUrl
+    // videoUrl format: /api/movies/stream/{fileId}
+    const fileId = movie.videoUrl.split("/").pop();
+
+    const db = mongoose.connection.db;
+    const bucket = new mongoose.mongo.GridFSBucket(db, {
+      bucketName: "movies",
+    });
+
+    // Delete file from GridFS bucket
+    await bucket.delete(new mongoose.Types.ObjectId(fileId));
+
+    // Delete the Movie document
+    await Movie.findByIdAndDelete(id);
+
+    res.status(200).json({ message: "Movie deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting movie:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+export { addMovie, getMovies, streamMovieVideo, listMovieFiles, downloadMovieVideo, deleteMovie };

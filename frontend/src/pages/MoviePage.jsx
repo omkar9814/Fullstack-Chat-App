@@ -195,6 +195,23 @@ const MoviePage = () => {
               >
                 Download Video
               </a>
+              <button
+                onClick={async () => {
+                  if (window.confirm(`Are you sure you want to delete "${movie.title}"?`)) {
+                    try {
+                      await axiosInstance.delete(`/movies/${movie._id}`);
+                      alert("Movie deleted successfully");
+                      fetchMovies();
+                    } catch (error) {
+                      console.error("Failed to delete movie", error);
+                      alert("Failed to delete movie");
+                    }
+                  }
+                }}
+                className="btn btn-red mt-2 text-white font-semibold hover:bg-red-700 transition-colors"
+              >
+                Delete Video
+              </button>
             </div>
           ))
         )}
